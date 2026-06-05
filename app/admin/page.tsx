@@ -16,6 +16,7 @@ export default function AdminDashboard() {
   const [linkedinUrl, setLinkedinUrl] = useState("");
   const [githubUrl, setGithubUrl] = useState("");
   const [email, setEmail] = useState("");
+  const [resumeUrl, setResumeUrl] = useState("");
   const [sectionOrder, setSectionOrder] = useState<string[]>(["technologies", "projects", "experience", "certifications"]);
   const [loading, setLoading] = useState(true);
 
@@ -36,6 +37,7 @@ export default function AdminDashboard() {
       setLinkedinUrl(p.linkedin_url || "");
       setGithubUrl(p.github_url || "");
       setEmail(p.email || "");
+      setResumeUrl(p.resume_url || "");
       setSectionOrder(p.section_order || ["technologies", "projects", "experience", "certifications"]);
     }
     setLoading(false);
@@ -53,6 +55,7 @@ export default function AdminDashboard() {
       linkedin_url: linkedinUrl,
       github_url: githubUrl,
       email,
+      resume_url: resumeUrl,
       section_order: sectionOrder
     };
     
@@ -101,8 +104,15 @@ export default function AdminDashboard() {
           ) : (
             <div className="w-40 h-40 rounded-full bg-slate-950 border-4 border-slate-800 flex items-center justify-center text-slate-500 shrink-0">Sem Foto</div>
           )}
-          <div className="w-full">
+          <div className="w-full space-y-4">
             <Dropzone onUploadSuccess={(url) => setAvatarUrl(url)} label="Alterar Foto de Perfil (JPG/PNG)" folder="profile" accept="image/*" />
+            <Dropzone onUploadSuccess={(url) => setResumeUrl(url)} label="Anexar Currículo (PDF)" folder="profile" accept="application/pdf" />
+            {resumeUrl && (
+              <div className="flex items-center justify-between bg-slate-800/50 px-4 py-2 mt-2 rounded-lg border border-slate-700">
+                <p className="text-blue-400 text-sm font-medium">Currículo anexado!</p>
+                <button type="button" onClick={() => setResumeUrl("")} className="text-red-400 hover:text-red-300 text-sm font-medium transition-colors">Remover</button>
+              </div>
+            )}
           </div>
         </div>
 

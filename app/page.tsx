@@ -278,8 +278,17 @@ export default function Home() {
 
       {/* Navigation Header */}
       <header className="sticky top-0 z-50 bg-slate-950/80 backdrop-blur-md border-b border-slate-900">
-        <div className="max-w-5xl mx-auto px-6 h-16 flex items-center justify-between">
-          <span className="text-xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-blue-400 to-blue-600">MatheusQA</span>
+        <div className="max-w-6xl mx-auto px-6 sm:px-12 h-16 flex items-center justify-between">
+          <div className="flex items-center gap-4">
+            <button onClick={() => window.scrollTo({ top: 0, behavior: 'smooth' })} className="hover:scale-110 transition-transform focus:outline-none -ml-1" title="Voltar ao topo">
+              <img src="/topIcon.png" alt="Topo" className="w-8 h-8 object-contain" />
+            </button>
+            {profile?.resume_url && (
+              <a href={profile.resume_url} target="_blank" rel="noreferrer" className="flex items-center gap-2 text-xs sm:text-sm font-bold bg-blue-600 hover:bg-blue-500 text-white px-3 py-1.5 sm:px-4 sm:py-2 rounded-lg transition-all shadow-lg shadow-blue-600/20">
+                <FileText className="w-4 h-4" /> <span className="hidden sm:inline">Baixar Currículo</span><span className="sm:hidden">Currículo</span>
+              </a>
+            )}
+          </div>
           <nav className="flex gap-4 md:gap-6 text-sm font-medium text-slate-400">
             {order.map((sectionId: string) => (
               <a key={sectionId} href={`#${sectionId}`} className="hover:text-blue-400 transition-colors">
@@ -291,52 +300,122 @@ export default function Home() {
       </header>
 
       {/* Hero Section */}
-      <div className="relative border-b border-slate-900 overflow-hidden">
+      <section className="relative min-h-[90vh] flex items-center justify-center p-6 sm:p-12 overflow-hidden font-sans border-b border-slate-900">
         
-        <FadeIn>
-          <section className="max-w-5xl mx-auto px-6 py-28 md:py-36 text-center flex flex-col items-center relative z-10">
-          {profile?.avatar_url ? (
-            <img src={profile.avatar_url} alt="Profile" className="w-32 h-32 md:w-44 md:h-44 rounded-full object-cover border-4 border-slate-900 ring-4 ring-blue-500/30 mb-8 shadow-2xl" />
-          ) : (
-            <div className="w-32 h-32 md:w-44 md:h-44 rounded-full bg-slate-900 border-4 border-slate-800 ring-4 ring-blue-500/30 flex items-center justify-center mb-8 shadow-2xl">
-              <User className="w-16 h-16 text-slate-600" />
-            </div>
-          )}
-          <h1 className="text-5xl md:text-7xl font-extrabold text-white mb-4 whitespace-pre-line tracking-tight">
-            {profile?.name ? (
-              <>Olá, eu sou <span className="text-transparent bg-clip-text bg-gradient-to-r from-blue-400 to-blue-600">{profile.name}</span></>
-            ) : (
-              <>Olá, eu sou <span className="text-transparent bg-clip-text bg-gradient-to-r from-blue-400 to-blue-600">Matheus</span></>
-            )}
-          </h1>
-          <h2 className="text-2xl md:text-3xl font-medium text-slate-400 mb-8">
-            {profile?.role || "Desenvolvedor de Software"}
-          </h2>
-          <p className="text-lg md:text-xl text-slate-400 max-w-2xl mx-auto whitespace-pre-line leading-relaxed">
-            {profile?.description || "Bem-vindo ao meu portfólio. Aqui você encontra meus projetos recentes e certificações, demonstrando minha jornada e evolução na tecnologia."}
-          </p>
+        {/* Efeitos de Luz de Fundo (Background Glows) */}
+        <div className="absolute top-[10%] left-[10%] w-96 h-96 bg-blue-600/20 rounded-full blur-[120px] pointer-events-none"></div>
+        <div className="absolute bottom-[10%] right-[10%] w-96 h-96 bg-teal-500/10 rounded-full blur-[120px] pointer-events-none"></div>
 
-          {/* Redes Sociais */}
-          <div className="flex flex-wrap items-center justify-center gap-4 mt-10">
-            {profile?.whatsapp_url && (
-              <a href={profile.whatsapp_url} target="_blank" rel="noreferrer" className="flex items-center gap-2 bg-slate-900/80 border border-slate-800 hover:border-green-500/50 hover:bg-slate-800 hover:text-green-400 text-slate-300 px-6 py-3 rounded-full transition-all duration-300 font-medium shadow-lg hover:shadow-green-500/10 hover:-translate-y-1">
-                 <FaWhatsapp className="w-5 h-5" /> WhatsApp
-              </a>
-            )}
-            {profile?.linkedin_url && (
-              <a href={profile.linkedin_url} target="_blank" rel="noreferrer" className="flex items-center gap-2 bg-slate-900/80 border border-slate-800 hover:border-blue-500/50 hover:bg-slate-800 hover:text-blue-400 text-slate-300 px-6 py-3 rounded-full transition-all duration-300 font-medium shadow-lg hover:shadow-blue-500/10 hover:-translate-y-1">
-                 <FaLinkedin className="w-5 h-5" /> LinkedIn
-              </a>
-            )}
-            {profile?.email && (
-              <a href={`mailto:${profile.email}`} className="flex items-center gap-2 bg-gradient-to-r from-blue-600 to-blue-500 hover:from-blue-500 hover:to-blue-400 text-white px-6 py-3 rounded-full transition-all duration-300 font-bold shadow-lg shadow-blue-500/25 hover:shadow-blue-500/40 hover:-translate-y-1">
-                <Mail className="w-5 h-5" /> Email
-              </a>
-            )}
+        <FadeIn>
+          {/* Container Principal */}
+          <div className="max-w-6xl mx-auto w-full relative z-10 pt-16 lg:pt-0">
+            
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-16 lg:gap-8 items-center relative z-10">
+            
+            {/* LADO ESQUERDO: Textos e CTAs */}
+            <div className="flex flex-col items-center text-center lg:items-start lg:text-left space-y-6">
+              
+              <h1 className="text-4xl md:text-5xl lg:text-7xl font-extrabold tracking-tight text-white leading-tight">
+                <span className="block text-xl md:text-2xl lg:text-3xl font-medium text-slate-300 mb-2 tracking-wide">
+                  Olá, eu sou
+                </span>
+                <span className="block text-blue-500 drop-shadow-[0_0_20px_rgba(59,130,246,0.4)] mt-1">
+                  {profile?.name || "Matheus"}
+                </span>
+              </h1>
+              
+              <h2 className="text-xl md:text-2xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-cyan-400 to-teal-300 animate-pulse">
+                {profile?.role || "Desenvolvedor de Software"}
+              </h2>
+              
+              <p className="text-slate-400 text-base md:text-lg leading-relaxed max-w-lg whitespace-pre-line">
+                {profile?.description || "Bem-vindo ao meu portfólio. Aqui você encontra meus projetos recentes e certificações, demonstrando minha jornada e evolução na tecnologia."}
+              </p>
+              
+              {/* Botões: Glassmorphism Pills */}
+              <div className="flex flex-wrap justify-center lg:justify-start gap-4 pt-6">
+                {profile?.whatsapp_url && (
+                  <a href={profile.whatsapp_url} target="_blank" rel="noreferrer" className="group relative px-6 py-3 rounded-full flex items-center gap-3 text-sm font-semibold text-slate-200 bg-slate-800/40 border border-slate-700/50 backdrop-blur-md hover:bg-slate-800/80 hover:text-white hover:border-green-400/50 hover:shadow-[0_0_20px_rgba(74,222,128,0.3)] transition-all duration-300 hover:-translate-y-1">
+                    <FaWhatsapp className="w-5 h-5 text-current group-hover:text-green-400 transition-colors" />
+                    <span>WhatsApp</span>
+                  </a>
+                )}
+                {profile?.linkedin_url && (
+                  <a href={profile.linkedin_url} target="_blank" rel="noreferrer" className="group relative px-6 py-3 rounded-full flex items-center gap-3 text-sm font-semibold text-slate-200 bg-slate-800/40 border border-slate-700/50 backdrop-blur-md hover:bg-slate-800/80 hover:text-white hover:border-blue-400/50 hover:shadow-[0_0_20px_rgba(96,165,250,0.3)] transition-all duration-300 hover:-translate-y-1">
+                    <FaLinkedin className="w-5 h-5 text-current group-hover:text-blue-400 transition-colors" />
+                    <span>LinkedIn</span>
+                  </a>
+                )}
+                {profile?.email && (
+                  <a href={`mailto:${profile.email}`} className="group relative px-6 py-3 rounded-full flex items-center gap-3 text-sm font-semibold text-slate-200 bg-slate-800/40 border border-slate-700/50 backdrop-blur-md hover:bg-slate-800/80 hover:text-white hover:border-teal-400/50 hover:shadow-[0_0_20px_rgba(45,212,191,0.3)] transition-all duration-300 hover:-translate-y-1">
+                    <Mail className="w-5 h-5 text-current group-hover:text-teal-400 transition-colors" />
+                    <span>Email</span>
+                  </a>
+                )}
+              </div>
+            </div>
+
+            {/* LADO DIREITO: Painel Tecnológico e Imagem Holográfica */}
+              <div className="relative flex justify-center w-full max-w-lg mx-auto lg:ml-auto mt-10 lg:mt-0 transition-all duration-1000 transform lg:[transform:perspective(1200px)_rotateY(-20deg)_rotateX(10deg)_translateX(3rem)] lg:hover:[transform:perspective(1200px)_rotateY(0deg)_rotateX(0deg)_translateX(0)] hover:scale-105 z-20">
+              
+              {/* Card com Glassmorphism Intenso */}
+                <div className="relative w-full aspect-square rounded-[2.5rem] bg-slate-900/40 border border-white/10 backdrop-blur-xl shadow-[0_8px_32px_rgba(0,0,0,0.5),inset_0_0_32px_rgba(59,130,246,0.1)] flex items-center justify-center overflow-hidden hover:shadow-[0_8px_60px_rgba(59,130,246,0.3)] transition-shadow duration-700">
+                
+                {/* Efeito visual: Orbe brilhante interno */}
+                <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-3/4 h-3/4 bg-blue-500/20 blur-[80px] rounded-full pointer-events-none"></div>
+
+                {/* Decorações Holográficas: Linhas de código fake */}
+                <div className="absolute top-6 left-6 text-[11px] font-mono text-cyan-400/50 space-y-1 select-none pointer-events-none hidden sm:block">
+                  <p>import {'{'} Future {'}'} from 'technology';</p>
+                  <p>const system = new Framework();</p>
+                  <p>system.initialize();</p>
+                </div>
+                
+                <div className="absolute bottom-8 right-6 text-[11px] font-mono text-blue-400/50 text-right select-none pointer-events-none hidden sm:block">
+                  <p>sys.automation: <span className="text-slate-300/60">100%</span></p>
+                  <p>sys.status: <span className="text-teal-400/70 drop-shadow-[0_0_5px_rgba(45,212,191,0.5)]">ONLINE</span></p>
+                </div>
+
+                {/* Fake Widget flutuante: Check de status */}
+                <div className="absolute bottom-8 left-6 bg-slate-950/60 border border-white/10 backdrop-blur-md px-4 py-2 rounded-2xl flex items-center gap-3 shadow-2xl select-none pointer-events-none transform -rotate-2">
+                  <div className="flex items-center justify-center w-7 h-7 rounded-full bg-green-500/20 border border-green-500/40 text-green-400 shadow-[0_0_10px_rgba(74,222,128,0.2)]">
+                    <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="3">
+                      <path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7"/>
+                    </svg>
+                  </div>
+                  <div className="flex flex-col">
+                    <span className="text-[10px] font-bold text-slate-400 tracking-widest uppercase">System</span>
+                    <span className="text-xs font-semibold text-white">All Tests Passed</span>
+                  </div>
+                </div>
+
+                {/* FOTO DE PERFIL: Wrapper com Borda Hexagonal Brilhante */}
+                <div className="relative z-10 w-56 h-56 md:w-64 md:h-64 p-[3px] bg-gradient-to-br from-cyan-400 via-blue-600 to-purple-600 [clip-path:polygon(50%_0%,100%_25%,100%_75%,50%_100%,0%_75%,0%_25%)] drop-shadow-[0_0_25px_rgba(59,130,246,0.6)] group flex items-center justify-center">
+                  
+                  {/* Imagem Hexagonal em si */}
+                  <div className="w-full h-full bg-slate-900 [clip-path:polygon(50%_0%,100%_25%,100%_75%,50%_100%,0%_75%,0%_25%)] overflow-hidden relative flex items-center justify-center">
+                    {profile?.avatar_url ? (
+                      <img 
+                        src={profile.avatar_url} 
+                        alt="Profile" 
+                        className="w-full h-full object-cover opacity-90 group-hover:opacity-100 group-hover:scale-110 transition-all duration-700 ease-out" 
+                      />
+                    ) : (
+                      <User className="w-20 h-20 text-slate-600" />
+                    )}
+                    
+                    {/* Overlay escurecido sutil que some no hover */}
+                    <div className="absolute inset-0 bg-blue-900/20 group-hover:bg-transparent transition-colors duration-500 pointer-events-none"></div>
+                  </div>
+                </div>
+
+              </div>
+            </div>
+
           </div>
-          </section>
+          </div>
         </FadeIn>
-      </div>
+      </section>
 
       {/* Renderização Dinâmica das Seções */}
       {order.map((sectionId: string) => renderSection(sectionId))}
