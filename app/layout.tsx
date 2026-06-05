@@ -3,8 +3,11 @@ import { Toaster } from "react-hot-toast";
 import "./globals.css";
 
 export const metadata: Metadata = {
-  title: "Matheus's Portfolio",
+  title: "Matheus Sousa QA",
   description: "A showcase of my projects and certifications.",
+  icons: {
+    icon: "/topIcon.png"
+  }
 };
 
 export default function RootLayout({
