@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { supabase } from "@/lib/supabase";
-import { Trash2, Cpu } from "lucide-react";
+import { Trash2, Cpu, Pencil } from "lucide-react";
 import toast from "react-hot-toast";
 import Dropzone from "@/components/admin/Dropzone";
 
@@ -11,6 +11,7 @@ export default function AdminTechnologies() {
   const [loading, setLoading] = useState(true);
 
   // States do formulário
+  const [editingId, setEditingId] = useState<string | null>(null);
   const [name, setName] = useState("");
   const [category, setCategory] = useState("");
   const [iconUrl, setIconUrl] = useState("");
@@ -37,26 +38,47 @@ export default function AdminTechnologies() {
     }
   };
 
-  const handleCreate = async (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    const newTech = { name, category, icon_url: iconUrl || null };
+    const techData = { name, category, icon_url: iconUrl || null };
 
-    const { error } = await supabase.from("technologies").insert([newTech]);
-    if (error) {
+    let requestError;
+    if (editingId) {
+      const { error } = await supabase.from("technologies").update(techData).eq("id", editingId);
+      requestError = error;
+    } else {
+      const { error } = await supabase.from("technologies").insert([techData]);
+      requestError = error;
+    }
+
+    if (requestError) {
       toast.error("Erro ao salvar tecnologia");
     } else {
-      toast.success("Tecnologia adicionada!");
-      setName(""); setIconUrl(""); // Mantemos a categoria para facilitar múltiplos cadastros
+      toast.success(editingId ? "Tecnologia atualizada!" : "Tecnologia adicionada!");
+      resetForm();
       fetchTechnologies();
     }
+  };
+
+  const handleEdit = (tech: any) => {
+    setEditingId(tech.id);
+    setName(tech.name);
+    setCategory(tech.category);
+    setIconUrl(tech.icon_url || "");
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  };
+
+  const resetForm = () => {
+    setEditingId(null);
+    setName(""); setIconUrl(""); // Mantemos a categoria para facilitar múltiplos cadastros
   };
 
   return (
     <div className="p-8 max-w-6xl mx-auto space-y-12">
       <div>
-        <h1 className="text-3xl font-bold mb-6 text-white">Adicionar Tecnologia</h1>
+        <h1 className="text-3xl font-bold mb-6 text-white">{editingId ? "Editar Tecnologia" : "Adicionar Tecnologia"}</h1>
         
-        <form onSubmit={handleCreate} className="bg-slate-900/50 p-6 rounded-2xl border border-slate-800 grid grid-cols-1 md:grid-cols-2 gap-6 backdrop-blur-sm">
+        <form onSubmit={handleSubmit} className="bg-slate-900/50 p-6 rounded-2xl border border-slate-800 grid grid-cols-1 md:grid-cols-2 gap-6 backdrop-blur-sm">
           <div className="space-y-4">
             <input type="text" placeholder="Nome (Ex: React, Cypress, Jest)" required value={name} onChange={(e) => setName(e.target.value)}
               className="w-full bg-slate-950/50 text-slate-300 border border-slate-800 rounded-lg px-4 py-3 focus:outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500 transition" />
@@ -74,11 +96,23 @@ export default function AdminTechnologies() {
 
           <div className="space-y-4">
              <Dropzone onUploadSuccess={(url) => setIconUrl(url)} label="Ícone da Tecnologia (Opcional - SVG/PNG)" folder="technologies" accept="image/*" />
-             {iconUrl && <p className="text-blue-500 text-sm font-medium">Ícone anexado com sucesso!</p>}
+             {iconUrl && (
+               <div className="flex items-center justify-between bg-slate-800/50 px-4 py-2 mt-2 rounded-lg border border-slate-700">
+                 <p className="text-blue-400 text-sm font-medium">Ícone anexado!</p>
+                 <button type="button" onClick={() => setIconUrl("")} className="text-red-400 hover:text-red-300 text-sm font-medium transition-colors">Remover</button>
+               </div>
+             )}
           </div>
 
-          <div className="md:col-span-2">
-            <button type="submit" className="bg-blue-600 text-white font-bold px-6 py-3 rounded-lg hover:bg-blue-500 transition w-full md:w-auto">Adicionar</button>
+          <div className="md:col-span-2 flex flex-col md:flex-row gap-4">
+            <button type="submit" className="bg-blue-600 text-white font-bold px-6 py-3 rounded-lg hover:bg-blue-500 transition w-full md:w-auto">
+              {editingId ? "Atualizar" : "Adicionar"}
+            </button>
+            {editingId && (
+              <button type="button" onClick={resetForm} className="bg-slate-700 text-white font-bold px-6 py-3 rounded-lg hover:bg-slate-600 transition w-full md:w-auto">
+                Cancelar Edição
+              </button>
+            )}
           </div>
         </form>
       </div>
@@ -92,7 +126,10 @@ export default function AdminTechnologies() {
                 {tech.icon_url ? <img src={tech.icon_url} alt={tech.name} className="w-8 h-8 object-contain" /> : <Cpu className="w-8 h-8 text-slate-600"/>}
                 <div><h3 className="font-bold text-white text-sm">{tech.name}</h3><p className="text-blue-500 text-xs">{tech.category}</p></div>
               </div>
-              <button onClick={() => handleDelete(tech.id)} className="text-slate-500 hover:text-red-400 p-2"><Trash2 className="w-4 h-4" /></button>
+              <div className="flex gap-2">
+                <button onClick={() => handleEdit(tech)} className="text-slate-500 hover:text-blue-400 p-2 transition-colors" title="Editar"><Pencil className="w-4 h-4" /></button>
+                <button onClick={() => handleDelete(tech.id)} className="text-slate-500 hover:text-red-400 p-2 transition-colors" title="Excluir"><Trash2 className="w-4 h-4" /></button>
+              </div>
             </div>
           ))}
         </div>

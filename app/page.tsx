@@ -3,8 +3,9 @@
 import { useEffect, useState, useRef } from "react";
 import { supabase } from "@/lib/supabase";
 import { Project, Certification } from "@/types";
-import { ExternalLink, Award, FolderKanban, Loader2, FileText, Briefcase, Mail, User, Cpu, X, PlayCircle } from "lucide-react";
+import { ExternalLink, Award, FolderKanban, Loader2, FileText, Briefcase, Mail, User, Cpu, X, PlayCircle, Download } from "lucide-react";
 import { FaGithub, FaLinkedin, FaWhatsapp } from "react-icons/fa";
+import toast from "react-hot-toast";
 
 // Componente para criar animação suave de surgimento ao rolar a página
 function FadeIn({ children, delay = 0 }: { children: React.ReactNode; delay?: number }) {
@@ -47,6 +48,10 @@ export default function Home() {
   const [loading, setLoading] = useState(true);
   const [selectedProject, setSelectedProject] = useState<any>(null);
   const [selectedCert, setSelectedCert] = useState<any>(null);
+  const [contactName, setContactName] = useState("");
+  const [contactEmail, setContactEmail] = useState("");
+  const [contactMessage, setContactMessage] = useState("");
+  const [isSending, setIsSending] = useState(false);
 
   useEffect(() => {
     async function fetchData() {
@@ -78,6 +83,55 @@ export default function Home() {
     }
   }, [selectedProject, selectedCert]);
 
+  // Envio direto do formulário para o e-mail
+  const handleContactSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!profile?.email) return;
+    
+    setIsSending(true);
+    try {
+      const response = await fetch(`https://formsubmit.co/ajax/${profile.email}`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          "Accept": "application/json"
+        },
+        body: JSON.stringify({
+          Nome: contactName,
+          Email: contactEmail,
+          Mensagem: contactMessage,
+          _subject: `Novo contato de ${contactName} via Portfólio`
+        })
+      });
+
+      if (response.ok) {
+        toast.success("Mensagem enviada com sucesso!");
+        setContactName(""); setContactEmail(""); setContactMessage("");
+      } else {
+        toast.error("Ocorreu um erro ao enviar a mensagem.");
+      }
+    } catch (err) {
+      toast.error("Erro de conexão ao tentar enviar a mensagem.");
+    } finally {
+      setIsSending(false);
+    }
+  };
+
+  // Gerador dinâmico de link do WhatsApp com mensagem pronta
+  const getWhatsappLink = (url: string | undefined) => {
+    if (!url) return "#";
+    const message = "Olá, Matheus! Tudo bem? Acabei de visitar seu portfólio e gostaria de conversar com você sobre sua atuação como QA.";
+    const separator = url.includes("?") ? "&" : "?";
+    return `${url}${separator}text=${encodeURIComponent(message)}`;
+  };
+
+  // Forçar o download do currículo com um nome específico usando os parâmetros do Supabase
+  const getResumeDownloadUrl = (url: string | undefined) => {
+    if (!url) return "#";
+    const separator = url.includes("?") ? "&" : "?";
+    return `${url}${separator}download=${encodeURIComponent("Curriculo Matheus Sousa QA.pdf")}`;
+  };
+
   // Função inteligente para agrupar as tecnologias pelas categorias cadastradas
   const groupedTechs = technologies.reduce((acc, tech) => {
     acc[tech.category] = acc[tech.category] || [];
@@ -96,7 +150,7 @@ export default function Home() {
           <FadeIn>
             <div className="flex items-center gap-3 mb-10">
               <Cpu className="w-8 h-8 text-blue-500" />
-              <h2 className="text-3xl font-bold text-white">Linguagens & Ferramentas</h2>
+              <h2 className="text-3xl font-bold text-white">Tecnologias</h2>
             </div>
           </FadeIn>
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
@@ -195,9 +249,9 @@ export default function Home() {
                     </div>
                     <div className="text-slate-400 text-sm whitespace-nowrap">
                       <span className="bg-slate-950/80 px-4 py-2 rounded-full border border-slate-800 font-medium shadow-sm inline-block">
-                        {new Date(exp.start_date).toLocaleDateString('pt-BR', { month: 'short', year: 'numeric' })} 
+                        {new Date(exp.start_date).toLocaleDateString('pt-BR', { timeZone: 'UTC', month: 'short', year: 'numeric' }).replace('.', '')} 
                         {' - '} 
-                        {exp.end_date ? new Date(exp.end_date).toLocaleDateString('pt-BR', { month: 'short', year: 'numeric' }) : 'Atualmente'}
+                        {exp.end_date ? new Date(exp.end_date).toLocaleDateString('pt-BR', { timeZone: 'UTC', month: 'short', year: 'numeric' }).replace('.', '') : 'Atualmente'}
                       </span>
                     </div>
                   </div>
@@ -283,11 +337,6 @@ export default function Home() {
             <button onClick={() => window.scrollTo({ top: 0, behavior: 'smooth' })} className="hover:scale-110 transition-transform focus:outline-none -ml-1" title="Voltar ao topo">
               <img src="/topIcon.png" alt="Topo" className="w-8 h-8 object-contain" />
             </button>
-            {profile?.resume_url && (
-              <a href={profile.resume_url} target="_blank" rel="noreferrer" className="flex items-center gap-2 text-xs sm:text-sm font-bold bg-blue-600 hover:bg-blue-500 text-white px-3 py-1.5 sm:px-4 sm:py-2 rounded-lg transition-all shadow-lg shadow-blue-600/20">
-                <FileText className="w-4 h-4" /> <span className="hidden sm:inline">Baixar Currículo</span><span className="sm:hidden">Currículo</span>
-              </a>
-            )}
           </div>
           <nav className="flex gap-4 md:gap-6 text-sm font-medium text-slate-400">
             {order.map((sectionId: string) => (
@@ -295,6 +344,9 @@ export default function Home() {
                 {sectionNames[sectionId]}
               </a>
             ))}
+            {profile?.email && (
+              <a href="#contato" className="hover:text-blue-400 transition-colors">Contato</a>
+            )}
           </nav>
         </div>
       </header>
@@ -335,7 +387,7 @@ export default function Home() {
               {/* Botões: Glassmorphism Pills */}
               <div className="flex flex-wrap justify-center lg:justify-start gap-4 pt-6">
                 {profile?.whatsapp_url && (
-                  <a href={profile.whatsapp_url} target="_blank" rel="noreferrer" className="group relative px-6 py-3 rounded-full flex items-center gap-3 text-sm font-semibold text-slate-200 bg-slate-800/40 border border-slate-700/50 backdrop-blur-md hover:bg-slate-800/80 hover:text-white hover:border-green-400/50 hover:shadow-[0_0_20px_rgba(74,222,128,0.3)] transition-all duration-300 hover:-translate-y-1">
+                  <a href={getWhatsappLink(profile.whatsapp_url)} target="_blank" rel="noreferrer" className="group relative px-6 py-3 rounded-full flex items-center gap-3 text-sm font-semibold text-slate-200 bg-slate-800/40 border border-slate-700/50 backdrop-blur-md hover:bg-slate-800/80 hover:text-white hover:border-green-400/50 hover:shadow-[0_0_20px_rgba(74,222,128,0.3)] transition-all duration-300 hover:-translate-y-1">
                     <FaWhatsapp className="w-5 h-5 text-current group-hover:text-green-400 transition-colors" />
                     <span>WhatsApp</span>
                   </a>
@@ -346,10 +398,10 @@ export default function Home() {
                     <span>LinkedIn</span>
                   </a>
                 )}
-                {profile?.email && (
-                  <a href={`mailto:${profile.email}`} className="group relative px-6 py-3 rounded-full flex items-center gap-3 text-sm font-semibold text-slate-200 bg-slate-800/40 border border-slate-700/50 backdrop-blur-md hover:bg-slate-800/80 hover:text-white hover:border-teal-400/50 hover:shadow-[0_0_20px_rgba(45,212,191,0.3)] transition-all duration-300 hover:-translate-y-1">
-                    <Mail className="w-5 h-5 text-current group-hover:text-teal-400 transition-colors" />
-                    <span>Email</span>
+                {profile?.resume_url && (
+                  <a href={getResumeDownloadUrl(profile.resume_url)} download="Curriculo Matheus Sousa QA.pdf" className="group relative px-6 py-3 rounded-full flex items-center gap-3 text-sm font-semibold text-white bg-blue-600 border border-blue-500 backdrop-blur-md hover:bg-blue-500 hover:border-blue-400 shadow-[0_0_20px_rgba(37,99,235,0.4)] hover:shadow-[0_0_30px_rgba(37,99,235,0.6)] transition-all duration-300 hover:-translate-y-1">
+                    <Download className="w-5 h-5 text-white transition-colors" />
+                    <span>Currículo</span>
                   </a>
                 )}
               </div>
@@ -420,6 +472,60 @@ export default function Home() {
       {/* Renderização Dinâmica das Seções */}
       {order.map((sectionId: string) => renderSection(sectionId))}
 
+      {/* Formulário de Contato */}
+      {profile?.email && (
+        <section id="contato" className="max-w-4xl mx-auto px-6 py-24 scroll-mt-16">
+          <FadeIn>
+            <div className="flex flex-col items-center justify-center gap-4 mb-12 text-center">
+              <div className="w-16 h-16 bg-blue-900/30 rounded-2xl flex items-center justify-center border border-blue-500/30 shadow-[0_0_30px_rgba(59,130,246,0.2)]">
+                <Mail className="w-8 h-8 text-blue-400" />
+              </div>
+              <h2 className="text-4xl font-extrabold text-white tracking-tight">Vamos Trabalhar <span className="text-transparent bg-clip-text bg-gradient-to-r from-blue-400 to-teal-400">Juntos?</span></h2>
+              <p className="text-slate-400 max-w-xl text-lg">Preencha o formulário abaixo para me enviar um e-mail diretamente. Entrarei em contato o mais rápido possível!</p>
+            </div>
+            
+            <form onSubmit={handleContactSubmit} className="relative bg-slate-900/40 border border-slate-800 p-8 md:p-10 rounded-3xl shadow-2xl backdrop-blur-xl overflow-hidden">
+              <div className="absolute -top-24 -right-24 w-64 h-64 bg-blue-600/10 rounded-full blur-[80px] pointer-events-none"></div>
+              <div className="absolute -bottom-24 -left-24 w-64 h-64 bg-teal-500/10 rounded-full blur-[80px] pointer-events-none"></div>
+              
+              <div className="relative z-10 space-y-6">
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                  <div className="space-y-2">
+                    <label className="block text-sm font-semibold text-slate-300">Seu Nome</label>
+                    <div className="relative group">
+                      <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
+                        <User className="w-5 h-5 text-slate-500 group-focus-within:text-blue-400 transition-colors" />
+                      </div>
+                      <input required type="text" value={contactName} onChange={(e) => setContactName(e.target.value)} className="w-full bg-slate-950/50 text-slate-200 border border-slate-700/50 rounded-xl pl-11 pr-4 py-3.5 focus:outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20 transition-all placeholder:text-slate-600" placeholder="Como quer ser chamado?" />
+                    </div>
+                  </div>
+                  <div className="space-y-2">
+                    <label className="block text-sm font-semibold text-slate-300">Seu E-mail</label>
+                    <div className="relative group">
+                      <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
+                        <Mail className="w-5 h-5 text-slate-500 group-focus-within:text-blue-400 transition-colors" />
+                      </div>
+                      <input required type="email" value={contactEmail} onChange={(e) => setContactEmail(e.target.value)} className="w-full bg-slate-950/50 text-slate-200 border border-slate-700/50 rounded-xl pl-11 pr-4 py-3.5 focus:outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20 transition-all placeholder:text-slate-600" placeholder="seu@email.com" />
+                    </div>
+                  </div>
+                </div>
+                <div className="space-y-2">
+                  <label className="block text-sm font-semibold text-slate-300">Mensagem</label>
+                  <textarea required value={contactMessage} onChange={(e) => setContactMessage(e.target.value)} className="w-full bg-slate-950/50 text-slate-200 border border-slate-700/50 rounded-xl px-4 py-4 focus:outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20 transition-all h-40 resize-none placeholder:text-slate-600" placeholder="Escreva sua mensagem aqui..."></textarea>
+                </div>
+                <button disabled={isSending} type="submit" className="w-full group relative inline-flex items-center justify-center gap-3 bg-gradient-to-r from-blue-600 to-teal-500 text-white font-bold py-4 rounded-xl transition-all duration-300 hover:scale-[1.02] hover:shadow-[0_0_30px_rgba(59,130,246,0.4)] overflow-hidden disabled:opacity-70 disabled:hover:scale-100 disabled:cursor-not-allowed">
+                  <div className="absolute inset-0 bg-white/20 group-hover:translate-x-full -translate-x-full transition-transform duration-500 skew-x-12"></div>
+                  <span className="relative z-10 flex items-center gap-2">
+                    {isSending ? <Loader2 className="w-5 h-5 animate-spin" /> : <Mail className="w-5 h-5" />} 
+                    {isSending ? "Enviando..." : "Enviar Mensagem"}
+                  </span>
+                </button>
+              </div>
+            </form>
+          </FadeIn>
+        </section>
+      )}
+
       {/* Footer Profissional */}
       <footer className="border-t border-slate-800/60 bg-slate-950/50 py-10 mt-16 backdrop-blur-sm">
         <div className="max-w-5xl mx-auto px-6 flex flex-col md:flex-row items-center justify-between gap-6">
@@ -428,7 +534,7 @@ export default function Home() {
           </p>
           <div className="flex items-center gap-6 text-slate-500">
             {profile?.whatsapp_url && (
-              <a href={profile.whatsapp_url} target="_blank" rel="noreferrer" className="hover:text-green-400 transition-colors" aria-label="WhatsApp">
+              <a href={getWhatsappLink(profile.whatsapp_url)} target="_blank" rel="noreferrer" className="hover:text-green-400 transition-colors" aria-label="WhatsApp">
                 <FaWhatsapp className="w-6 h-6" />
               </a>
             )}
@@ -440,6 +546,11 @@ export default function Home() {
             {profile?.email && (
               <a href={`mailto:${profile.email}`} className="hover:text-blue-400 transition-colors" aria-label="Email">
                 <Mail className="w-6 h-6" />
+              </a>
+            )}
+            {profile?.resume_url && (
+              <a href={getResumeDownloadUrl(profile.resume_url)} download="Curriculo Matheus Sousa QA.pdf" className="hover:text-blue-400 transition-colors" aria-label="Currículo">
+                <Download className="w-6 h-6" />
               </a>
             )}
           </div>
