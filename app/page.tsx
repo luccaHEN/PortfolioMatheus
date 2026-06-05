@@ -3,7 +3,7 @@
 import { useEffect, useState, useRef } from "react";
 import { supabase } from "@/lib/supabase";
 import { Project, Certification } from "@/types";
-import { ExternalLink, Award, FolderKanban, Loader2, FileText, Briefcase, Mail, User, Cpu } from "lucide-react";
+import { ExternalLink, Award, FolderKanban, Loader2, FileText, Briefcase, Mail, User, Cpu, X, PlayCircle } from "lucide-react";
 import { FaGithub, FaLinkedin, FaWhatsapp } from "react-icons/fa";
 
 // Componente para criar animação suave de surgimento ao rolar a página
@@ -45,6 +45,8 @@ export default function Home() {
   const [experiences, setExperiences] = useState<any[]>([]);
   const [profile, setProfile] = useState<any>(null);
   const [loading, setLoading] = useState(true);
+  const [selectedProject, setSelectedProject] = useState<any>(null);
+  const [selectedCert, setSelectedCert] = useState<any>(null);
 
   useEffect(() => {
     async function fetchData() {
@@ -66,6 +68,15 @@ export default function Home() {
 
     fetchData();
   }, []);
+
+  // Impedir scroll do site quando o modal estiver aberto
+  useEffect(() => {
+    if (selectedProject || selectedCert) {
+      document.body.style.overflow = "hidden";
+    } else {
+      document.body.style.overflow = "auto";
+    }
+  }, [selectedProject, selectedCert]);
 
   // Função inteligente para agrupar as tecnologias pelas categorias cadastradas
   const groupedTechs = technologies.reduce((acc, tech) => {
@@ -123,12 +134,15 @@ export default function Home() {
             {projects.map((project, index) => (
               <FadeIn key={project.id} delay={index * 150}>
                 <div className="group bg-slate-900/50 border border-slate-800/80 rounded-2xl overflow-hidden hover:border-blue-500/50 hover:bg-slate-900 transition-all duration-500 hover:-translate-y-1.5 hover:shadow-2xl hover:shadow-blue-900/20 flex flex-col h-full">
-                {project.image_url ? (
-                  <div className="overflow-hidden border-b border-slate-800/80">
-                    <img src={project.image_url} alt={project.title} className="w-full h-48 object-cover group-hover:scale-105 transition-transform duration-500" />
+                {project.video_url ? (
+                  <div className="relative overflow-hidden border-b border-slate-800/80 cursor-pointer" onClick={() => setSelectedProject(project)}>
+                    <video src={project.video_url} className="w-full h-48 object-cover group-hover:scale-105 transition-transform duration-500" muted loop playsInline />
+                    <div className="absolute inset-0 bg-black/40 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity duration-300">
+                      <PlayCircle className="w-12 h-12 text-white/90 drop-shadow-lg" />
+                    </div>
                   </div>
                 ) : (
-                  <div className="w-full h-48 bg-slate-800/50 flex items-center justify-center border-b border-slate-800/80">
+                  <div className="w-full h-48 bg-slate-800/50 flex items-center justify-center border-b border-slate-800/80 cursor-pointer hover:bg-slate-800 transition-colors" onClick={() => setSelectedProject(project)}>
                     <FolderKanban className="w-10 h-10 text-slate-600"/>
                   </div>
                 )}
@@ -145,16 +159,9 @@ export default function Home() {
                     </div>
                   )}
                   <div className="pt-5 mt-auto flex items-center gap-4 border-t border-slate-800/80">
-                    {project.github_url && (
-                      <a href={project.github_url} target="_blank" rel="noreferrer" className="flex items-center gap-2 text-sm text-slate-300 hover:text-blue-400 transition-colors font-medium">
-                        <FaGithub className="w-4 h-4" /> Repositório
-                      </a>
-                    )}
-                    {project.live_url && (
-                      <a href={project.live_url} target="_blank" rel="noreferrer" className="flex items-center gap-2 text-sm text-slate-300 hover:text-blue-400 transition-colors font-medium">
-                        <ExternalLink className="w-4 h-4" /> Acessar
-                      </a>
-                    )}
+                    <button onClick={() => setSelectedProject(project)} className="w-full py-2.5 bg-slate-900/50 hover:bg-slate-800 text-sm text-slate-300 hover:text-white transition-colors font-medium rounded-lg border border-slate-700/50">
+                      Ver detalhes
+                    </button>
                   </div>
                 </div>
                 </div>
@@ -221,11 +228,14 @@ export default function Home() {
               <FadeIn key={cert.id} delay={index * 150}>
                 <div className="group bg-slate-900/50 border border-slate-800/80 rounded-2xl overflow-hidden hover:border-blue-500/50 hover:bg-slate-900 transition-all duration-500 hover:-translate-y-1.5 hover:shadow-2xl hover:shadow-blue-900/20 flex flex-col h-full">
                 {cert.image_url ? (
-                  <div className="overflow-hidden border-b border-slate-800/80">
-                    <img src={cert.image_url} alt={cert.title} className="w-full h-40 object-cover group-hover:scale-105 transition-transform duration-500" />
+                  <div className="relative overflow-hidden border-b border-slate-800/80 cursor-pointer group/cert" onClick={() => setSelectedCert(cert)}>
+                    <img src={cert.image_url} alt={cert.title} className="w-full h-40 object-cover group-hover/cert:scale-105 transition-transform duration-500" />
+                    <div className="absolute inset-0 bg-black/40 flex items-center justify-center opacity-0 group-hover/cert:opacity-100 transition-opacity duration-300">
+                       <span className="text-white font-medium px-4 py-2 bg-blue-600/80 rounded-lg backdrop-blur-sm">Ver Certificado</span>
+                    </div>
                   </div>
                 ) : (
-                  <div className="w-full h-40 bg-slate-800/50 flex items-center justify-center border-b border-slate-800/80">
+                  <div className="w-full h-40 bg-slate-800/50 flex items-center justify-center border-b border-slate-800/80 cursor-pointer hover:bg-slate-800 transition-colors" onClick={() => setSelectedCert(cert)}>
                     <Award className="w-10 h-10 text-slate-600"/>
                   </div>
                 )}
@@ -356,6 +366,72 @@ export default function Home() {
           </div>
         </div>
       </footer>
+
+      {/* Modal do Projeto */}
+      {selectedProject && (
+        <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 sm:p-6 bg-black/80 backdrop-blur-sm" onClick={() => setSelectedProject(null)}>
+          <div className="bg-slate-950 border border-slate-800 rounded-2xl max-w-5xl w-full max-h-[90vh] overflow-hidden flex flex-col md:flex-row relative shadow-2xl shadow-blue-900/20" onClick={(e) => e.stopPropagation()}>
+            <button onClick={() => setSelectedProject(null)} className="absolute top-4 right-4 z-10 text-slate-400 hover:text-white bg-slate-900/80 rounded-full p-2 backdrop-blur-sm transition-colors">
+               <X className="w-5 h-5" />
+            </button>
+            <div className="md:w-3/5 bg-black flex items-center justify-center relative min-h-[30vh]">
+              {selectedProject.video_url ? (
+                <video src={selectedProject.video_url} controls autoPlay className="w-full h-full object-contain max-h-[60vh] md:max-h-[90vh]" />
+              ) : (
+                <FolderKanban className="w-20 h-20 text-slate-700" />
+              )}
+            </div>
+            <div className="md:w-2/5 p-6 md:p-8 flex flex-col h-full max-h-[60vh] md:max-h-[90vh] overflow-y-auto">
+              {selectedProject.category && (
+                <span className="text-blue-500 text-sm font-bold uppercase tracking-wider mb-2 block">{selectedProject.category}</span>
+              )}
+              <h2 className="text-2xl font-bold text-white mb-6 leading-tight">{selectedProject.title}</h2>
+              <p className="text-slate-300 text-sm md:text-base whitespace-pre-line leading-relaxed flex-1 mb-8">{selectedProject.description}</p>
+              {selectedProject.technologies && selectedProject.technologies.length > 0 && (
+                <div className="mb-8">
+                  <h4 className="text-slate-400 font-semibold mb-3 text-xs uppercase tracking-wider">Tecnologias Utilizadas</h4>
+                  <div className="flex flex-wrap gap-2">
+                    {selectedProject.technologies.map((tech: string, i: number) => (
+                      <span key={i} className="bg-slate-900 border border-slate-800 text-slate-300 text-xs px-3 py-1.5 rounded-lg font-medium">{tech}</span>
+                    ))}
+                  </div>
+                </div>
+              )}
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Modal de Certificação */}
+      {selectedCert && (
+        <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 sm:p-6 bg-black/80 backdrop-blur-sm" onClick={() => setSelectedCert(null)}>
+          <div className="bg-slate-950 border border-slate-800 rounded-2xl max-w-4xl w-full max-h-[90vh] flex flex-col overflow-hidden relative shadow-2xl" onClick={(e) => e.stopPropagation()}>
+            <div className="p-5 border-b border-slate-800/80 flex justify-between items-center bg-slate-900/50">
+              <div>
+                <h2 className="text-xl font-bold text-white">{selectedCert.title}</h2>
+                <p className="text-blue-500 text-sm mt-1">{selectedCert.institution} • {selectedCert.hours}h</p>
+              </div>
+              <button onClick={() => setSelectedCert(null)} className="text-slate-400 hover:text-white bg-slate-800/50 hover:bg-slate-700 rounded-full p-2 transition-colors">
+                <X className="w-5 h-5" />
+              </button>
+            </div>
+            <div className="flex-1 overflow-auto bg-black/50 p-4 sm:p-8 flex items-center justify-center">
+              {selectedCert.image_url ? (
+                <img src={selectedCert.image_url} alt={selectedCert.title} className="max-w-full max-h-full object-contain rounded-lg" />
+              ) : (
+                <p className="text-slate-500 flex flex-col items-center gap-4"><Award className="w-16 h-16 opacity-50"/> Imagem do certificado não disponível</p>
+              )}
+            </div>
+            {selectedCert.pdf_url && (
+               <div className="p-5 border-t border-slate-800/80 bg-slate-900/50 flex justify-center">
+                  <a href={selectedCert.pdf_url} target="_blank" rel="noreferrer" className="flex items-center gap-2 bg-blue-600 text-white px-8 py-3 rounded-xl font-bold hover:bg-blue-500 transition shadow-lg shadow-blue-600/20">
+                    <FileText className="w-5 h-5" /> Abrir PDF do Certificado
+                  </a>
+               </div>
+            )}
+          </div>
+        </div>
+      )}
     </main>
   );
 }

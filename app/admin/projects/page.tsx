@@ -17,10 +17,7 @@ export default function AdminProjects() {
   const [technologies, setTechnologies] = useState("");
   const [category, setCategory] = useState("");
   const [projectDate, setProjectDate] = useState("");
-  const [githubUrl, setGithubUrl] = useState("");
-  const [liveUrl, setLiveUrl] = useState("");
   const [videoUrl, setVideoUrl] = useState("");
-  const [imageUrl, setImageUrl] = useState("");
 
   useEffect(() => {
     fetchProjects();
@@ -55,12 +52,12 @@ export default function AdminProjects() {
       title,
       description,
       technologies: techArray,
-      category,
-      project_date: projectDate,
-      github_url: githubUrl || null,
-      live_url: liveUrl || null,
+      category: category || null,
+      project_date: projectDate || null,
       video_url: videoUrl || null,
-      image_url: imageUrl || null
+      github_url: null,
+      live_url: null,
+      image_url: null
     };
 
     const { error } = await supabase.from("projects").insert([newProject]);
@@ -72,7 +69,7 @@ export default function AdminProjects() {
       toast.success("Projeto adicionado com sucesso!");
       // Limpa o formulário
       setTitle(""); setDescription(""); setTechnologies(""); setCategory(""); 
-      setProjectDate(""); setGithubUrl(""); setLiveUrl(""); setVideoUrl(""); setImageUrl("");
+      setProjectDate(""); setVideoUrl("");
       fetchProjects();
     }
   };
@@ -90,28 +87,26 @@ export default function AdminProjects() {
             <textarea placeholder="Descrição sobre o projeto e seus desafios" required value={description} onChange={(e) => setDescription(e.target.value)}
               className="w-full bg-slate-950/50 text-slate-300 border border-slate-800 rounded-lg px-4 py-3 focus:outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500 transition h-32 resize-none" />
               
-            <input type="text" placeholder="Tecnologias (separe por vírgula. Ex: React, Node, Tailwind)" required value={technologies} onChange={(e) => setTechnologies(e.target.value)}
+            <input type="text" placeholder="Tecnologias (separe por vírgula. Ex: React, Node, Tailwind)" value={technologies} onChange={(e) => setTechnologies(e.target.value)}
               className="w-full bg-slate-950/50 text-slate-300 border border-slate-800 rounded-lg px-4 py-3 focus:outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500 transition" />
 
             <div className="flex gap-4">
-              <input type="text" placeholder="Categoria (Ex: Front-end, Full-stack)" required value={category} onChange={(e) => setCategory(e.target.value)}
+              <input type="text" placeholder="Categoria (Ex: Front-end, Full-stack)" value={category} onChange={(e) => setCategory(e.target.value)}
                 className="w-1/2 bg-slate-950/50 text-slate-300 border border-slate-800 rounded-lg px-4 py-3 focus:outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500 transition" />
                 
-              <input type="date" required value={projectDate} onChange={(e) => setProjectDate(e.target.value)}
+              <input type="date" value={projectDate} onChange={(e) => setProjectDate(e.target.value)}
                 className="w-1/2 bg-slate-950/50 text-slate-400 border border-slate-800 rounded-lg px-4 py-3 focus:outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500 transition" />
             </div>
           </div>
 
           <div className="space-y-4">
-            <input type="url" placeholder="URL do Repositório (GitHub)" value={githubUrl} onChange={(e) => setGithubUrl(e.target.value)}
-              className="w-full bg-slate-950/50 text-slate-300 border border-slate-800 rounded-lg px-4 py-3 focus:outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500 transition" />
-              
-            <input type="url" placeholder="URL do Projeto Online (Deploy)" value={liveUrl} onChange={(e) => setLiveUrl(e.target.value)}
-              className="w-full bg-slate-950/50 text-slate-300 border border-slate-800 rounded-lg px-4 py-3 focus:outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500 transition" />
-              
-             <Dropzone onUploadSuccess={(url) => setImageUrl(url)} label="Imagem de Capa do Projeto (JPG/PNG)" folder="projects" accept="image/*" />
-             
-             {imageUrl && <p className="text-blue-500 text-sm">Imagem anexada com sucesso!</p>}
+             <Dropzone onUploadSuccess={(url) => setVideoUrl(url)} label="Vídeo de Demonstração (MP4/WebM) - Opcional" folder="projects" accept="video/*" />
+             {videoUrl && (
+               <div className="flex items-center justify-between bg-slate-800/50 px-4 py-3 rounded-lg border border-slate-700">
+                 <p className="text-blue-400 text-sm font-medium">Vídeo anexado com sucesso!</p>
+                 <button type="button" onClick={() => setVideoUrl("")} className="text-red-400 hover:text-red-300 text-sm font-medium transition-colors">Limpar vídeo</button>
+               </div>
+             )}
           </div>
 
           <div className="md:col-span-2">
@@ -127,8 +122,8 @@ export default function AdminProjects() {
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
           {loading ? <p className="text-slate-400">Carregando...</p> : projects.map((project) => (
             <div key={project.id} className="bg-slate-900/50 border border-slate-800 rounded-2xl overflow-hidden hover:border-slate-700 transition flex flex-col">
-              {project.image_url ? (
-                <img src={project.image_url} alt={project.title} className="w-full h-40 object-cover" />
+              {project.video_url ? (
+                <video src={project.video_url} className="w-full h-40 object-cover" muted loop playsInline />
               ) : (
                 <div className="w-full h-40 bg-slate-800/50 flex items-center justify-center">
                   <FolderKanban className="w-10 h-10 text-slate-600"/>
@@ -139,7 +134,9 @@ export default function AdminProjects() {
                 <p className="text-slate-400 text-sm mt-1 line-clamp-2">{project.description}</p>
                 
                 <div className="mt-4 pt-4 border-t border-slate-800 flex justify-between items-center mt-auto">
-                  <span className="text-blue-500 text-sm font-medium">{project.category}</span>
+                  {project.category && (
+                    <span className="text-blue-500 text-sm font-medium">{project.category}</span>
+                  )}
                   <button onClick={() => handleDelete(project.id)} className="p-2 text-slate-500 hover:text-red-400 hover:bg-slate-800 rounded-lg transition">
                     <Trash2 className="w-4 h-4" />
                   </button>
