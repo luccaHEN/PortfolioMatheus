@@ -120,7 +120,7 @@ export default function Home() {
   // Gerador dinâmico de link do WhatsApp com mensagem pronta
   const getWhatsappLink = (url: string | undefined) => {
     if (!url) return "#";
-    const message = "Olá, Matheus! Tudo bem? Acabei de visitar seu portfólio e gostaria de conversar com você sobre sua atuação como QA.";
+    const message = "Olá, Matheus! Tudo bem? Acabei de visitar seu portfólio e gostaria de conversar sobre sua atuação como QA.";
     const separator = url.includes("?") ? "&" : "?";
     return `${url}${separator}text=${encodeURIComponent(message)}`;
   };
@@ -480,7 +480,7 @@ export default function Home() {
               <div className="w-16 h-16 bg-blue-900/30 rounded-2xl flex items-center justify-center border border-blue-500/30 shadow-[0_0_30px_rgba(59,130,246,0.2)]">
                 <Mail className="w-8 h-8 text-blue-400" />
               </div>
-              <h2 className="text-4xl font-extrabold text-white tracking-tight">Vamos Trabalhar <span className="text-transparent bg-clip-text bg-gradient-to-r from-blue-400 to-teal-400">Juntos?</span></h2>
+              <h2 className="text-4xl font-extrabold text-white tracking-tight">Conecte-se <span className="text-transparent bg-clip-text bg-gradient-to-r from-blue-400 to-teal-400">Comigo</span></h2>
               <p className="text-slate-400 max-w-xl text-lg">Preencha o formulário abaixo para me enviar um e-mail diretamente. Entrarei em contato o mais rápido possível!</p>
             </div>
             
@@ -530,7 +530,7 @@ export default function Home() {
       <footer className="border-t border-slate-800/60 bg-slate-950/50 py-10 mt-16 backdrop-blur-sm">
         <div className="max-w-5xl mx-auto px-6 flex flex-col md:flex-row items-center justify-between gap-6">
           <p className="text-slate-500 text-sm font-medium">
-            © {new Date().getFullYear()} MatheusQA. Todos os direitos reservados.
+            © {new Date().getFullYear()} Matheus QA. Todos os direitos reservados.
           </p>
           <div className="flex items-center gap-6 text-slate-500">
             {profile?.whatsapp_url && (
