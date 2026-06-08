@@ -543,16 +543,7 @@ export default function Home() {
                 <FaLinkedin className="w-6 h-6" />
               </a>
             )}
-            {profile?.email && (
-              <a href={`mailto:${profile.email}`} className="hover:text-blue-400 transition-colors" aria-label="Email">
-                <Mail className="w-6 h-6" />
-              </a>
-            )}
-            {profile?.resume_url && (
-              <a href={getResumeDownloadUrl(profile.resume_url)} download="Curriculo Matheus Sousa QA.pdf" className="hover:text-blue-400 transition-colors" aria-label="Currículo">
-                <Download className="w-6 h-6" />
-              </a>
-            )}
+
           </div>
         </div>
       </footer>
