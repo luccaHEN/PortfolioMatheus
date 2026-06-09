@@ -245,16 +245,16 @@ export default function Home() {
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
             {certifications.map((cert, index) => (
               <FadeIn key={cert.id} delay={index * 150}>
-                <div className="group bg-slate-900/50 border border-slate-800/80 rounded-2xl overflow-hidden hover:border-blue-500/50 hover:bg-slate-900 transition-all duration-500 hover:-translate-y-1.5 hover:shadow-2xl hover:shadow-blue-900/20 flex flex-col h-full">
+                <div className="group bg-slate-900/50 border border-slate-800/80 rounded-2xl overflow-hidden hover:border-blue-500/50 hover:bg-slate-900 transition-all duration-500 hover:-translate-y-1.5 hover:shadow-2xl hover:shadow-blue-900/20 flex flex-col h-full cursor-pointer" onClick={() => setSelectedCert(cert)}>
                 {cert.image_url ? (
-                  <div className="relative overflow-hidden border-b border-slate-800/80 cursor-pointer group/cert" onClick={() => setSelectedCert(cert)}>
+                  <div className="relative overflow-hidden border-b border-slate-800/80 group/cert">
                     <img src={cert.image_url} alt={cert.title} className="w-full h-40 object-cover group-hover/cert:scale-105 transition-transform duration-500" />
                     <div className="absolute inset-0 bg-black/40 flex items-center justify-center opacity-0 group-hover/cert:opacity-100 transition-opacity duration-300">
                        <span className="text-white font-medium px-4 py-2 bg-blue-600/80 rounded-lg backdrop-blur-sm">Ver Certificado</span>
                     </div>
                   </div>
                 ) : (
-                  <div className="w-full h-40 bg-slate-800/50 flex items-center justify-center border-b border-slate-800/80 cursor-pointer hover:bg-slate-800 transition-colors" onClick={() => setSelectedCert(cert)}>
+                  <div className="w-full h-40 bg-slate-800/50 flex items-center justify-center border-b border-slate-800/80 hover:bg-slate-800 transition-colors">
                     <Award className="w-10 h-10 text-slate-600"/>
                   </div>
                 )}
@@ -268,13 +268,6 @@ export default function Home() {
                       </span>
                     )}
                   </div>
-                  {cert.pdf_url && (
-                    <div className="mt-5 pt-5 border-t border-slate-800/80">
-                      <a href={cert.pdf_url} target="_blank" rel="noreferrer" className="flex items-center justify-center gap-2 text-sm bg-slate-800/50 text-slate-300 hover:text-blue-400 hover:bg-slate-800 py-2.5 rounded-lg transition-colors font-medium border border-slate-700/50">
-                        <FileText className="w-4 h-4" /> Ver Certificado
-                      </a>
-                    </div>
-                  )}
                 </div>
                 </div>
               </FadeIn>
