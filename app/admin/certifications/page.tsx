@@ -20,6 +20,7 @@ export default function AdminCertifications() {
   const [date, setDate] = useState("");
   const [imageUrl, setImageUrl] = useState("");
   const [pdfUrl, setPdfUrl] = useState("");
+  const [description, setDescription] = useState("");
 
   useEffect(() => {
     fetchCertifications();
@@ -52,7 +53,8 @@ export default function AdminCertifications() {
       hours: parseInt(hours) || 0,
       date,
       image_url: imageUrl,
-      pdf_url: pdfUrl
+      pdf_url: pdfUrl,
+      description
     };
 
     let requestError;
@@ -81,12 +83,13 @@ export default function AdminCertifications() {
     setDate(cert.date ? String(cert.date).split("T")[0] : "");
     setImageUrl(cert.image_url || "");
     setPdfUrl(cert.pdf_url || "");
+    setDescription((cert as any).description || "");
     window.scrollTo({ top: 0, behavior: 'smooth' });
   };
 
   const resetForm = () => {
     setEditingId(null);
-    setTitle(""); setInstitution(""); setHours(""); setDate(""); setImageUrl(""); setPdfUrl("");
+    setTitle(""); setInstitution(""); setHours(""); setDate(""); setImageUrl(""); setPdfUrl(""); setDescription("");
   };
 
   return (
@@ -109,6 +112,9 @@ export default function AdminCertifications() {
               <input type="date" required value={date} onChange={(e) => setDate(e.target.value)}
                 className="w-1/2 bg-slate-950/50 text-slate-400 border border-slate-800 rounded-lg px-4 py-3 focus:outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500 transition" />
             </div>
+            
+            <textarea placeholder="Descrição do Certificado (Opcional)" value={description} onChange={(e) => setDescription(e.target.value)}
+              className="w-full bg-slate-950/50 text-slate-300 border border-slate-800 rounded-lg px-4 py-3 focus:outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500 transition h-32 resize-none" />
           </div>
 
           <div className="space-y-4">

@@ -51,7 +51,6 @@ export default function Home() {
   const [contactName, setContactName] = useState("");
   const [contactEmail, setContactEmail] = useState("");
   const [contactMessage, setContactMessage] = useState("");
-  const [isSending, setIsSending] = useState(false);
 
   useEffect(() => {
     async function fetchData() {
@@ -82,40 +81,6 @@ export default function Home() {
       document.body.style.overflow = "auto";
     }
   }, [selectedProject, selectedCert]);
-
-  // Envio direto do formulário para o e-mail
-  const handleContactSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    if (!profile?.email) return;
-    
-    setIsSending(true);
-    try {
-      const response = await fetch(`https://formsubmit.co/ajax/${profile.email}`, {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          "Accept": "application/json"
-        },
-        body: JSON.stringify({
-          Nome: contactName,
-          Email: contactEmail,
-          Mensagem: contactMessage,
-          _subject: `Novo contato de ${contactName} via Portfólio`
-        })
-      });
-
-      if (response.ok) {
-        toast.success("Mensagem enviada com sucesso!");
-        setContactName(""); setContactEmail(""); setContactMessage("");
-      } else {
-        toast.error("Ocorreu um erro ao enviar a mensagem.");
-      }
-    } catch (err) {
-      toast.error("Erro de conexão ao tentar enviar a mensagem.");
-    } finally {
-      setIsSending(false);
-    }
-  };
 
   // Gerador dinâmico de link do WhatsApp com mensagem pronta
   const getWhatsappLink = (url: string | undefined) => {
@@ -294,10 +259,17 @@ export default function Home() {
                   </div>
                 )}
                 <div className="p-6 flex flex-col flex-1">
-                  <h3 className="font-bold text-lg text-white leading-tight">{cert.title}</h3>
-                  <p className="text-blue-500 text-sm mt-2">{cert.institution} • {cert.hours}h</p>
+                  <h3 className="font-bold text-lg text-white leading-tight line-clamp-2 mb-2">{cert.title}</h3>
+                  <div className="flex items-center justify-between mt-auto gap-4">
+                    <p className="text-blue-500 text-sm line-clamp-1">{cert.institution} • {cert.hours}h</p>
+                    {cert.date && (
+                      <span className="text-slate-400 text-xs font-medium bg-slate-800/50 px-2.5 py-1 rounded-md border border-slate-700/50 shrink-0">
+                        {new Date(cert.date).toLocaleDateString('pt-BR', { timeZone: 'UTC', month: 'short', year: 'numeric' }).replace('.', '')}
+                      </span>
+                    )}
+                  </div>
                   {cert.pdf_url && (
-                    <div className="mt-5 pt-5 border-t border-slate-800/80 mt-auto">
+                    <div className="mt-5 pt-5 border-t border-slate-800/80">
                       <a href={cert.pdf_url} target="_blank" rel="noreferrer" className="flex items-center justify-center gap-2 text-sm bg-slate-800/50 text-slate-300 hover:text-blue-400 hover:bg-slate-800 py-2.5 rounded-lg transition-colors font-medium border border-slate-700/50">
                         <FileText className="w-4 h-4" /> Ver Certificado
                       </a>
@@ -484,7 +456,7 @@ export default function Home() {
               <p className="text-slate-400 max-w-xl text-lg">Preencha o formulário abaixo para me enviar um e-mail diretamente. Entrarei em contato o mais rápido possível!</p>
             </div>
             
-            <form onSubmit={handleContactSubmit} className="relative bg-slate-900/40 border border-slate-800 p-8 md:p-10 rounded-3xl shadow-2xl backdrop-blur-xl overflow-hidden">
+            <form action={`https://formsubmit.co/${profile?.email}`} method="POST" className="relative bg-slate-900/40 border border-slate-800 p-8 md:p-10 rounded-3xl shadow-2xl backdrop-blur-xl overflow-hidden">
               <div className="absolute -top-24 -right-24 w-64 h-64 bg-blue-600/10 rounded-full blur-[80px] pointer-events-none"></div>
               <div className="absolute -bottom-24 -left-24 w-64 h-64 bg-teal-500/10 rounded-full blur-[80px] pointer-events-none"></div>
               
@@ -496,7 +468,7 @@ export default function Home() {
                       <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
                         <User className="w-5 h-5 text-slate-500 group-focus-within:text-blue-400 transition-colors" />
                       </div>
-                      <input required type="text" value={contactName} onChange={(e) => setContactName(e.target.value)} className="w-full bg-slate-950/50 text-slate-200 border border-slate-700/50 rounded-xl pl-11 pr-4 py-3.5 focus:outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20 transition-all placeholder:text-slate-600" placeholder="Como quer ser chamado?" />
+                      <input required type="text" name="name" value={contactName} onChange={(e) => setContactName(e.target.value)} className="w-full bg-slate-950/50 text-slate-200 border border-slate-700/50 rounded-xl pl-11 pr-4 py-3.5 focus:outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20 transition-all placeholder:text-slate-600" placeholder="Como quer ser chamado?" />
                     </div>
                   </div>
                   <div className="space-y-2">
@@ -505,19 +477,20 @@ export default function Home() {
                       <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
                         <Mail className="w-5 h-5 text-slate-500 group-focus-within:text-blue-400 transition-colors" />
                       </div>
-                      <input required type="email" value={contactEmail} onChange={(e) => setContactEmail(e.target.value)} className="w-full bg-slate-950/50 text-slate-200 border border-slate-700/50 rounded-xl pl-11 pr-4 py-3.5 focus:outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20 transition-all placeholder:text-slate-600" placeholder="seu@email.com" />
+                      <input required type="email" name="email" value={contactEmail} onChange={(e) => setContactEmail(e.target.value)} className="w-full bg-slate-950/50 text-slate-200 border border-slate-700/50 rounded-xl pl-11 pr-4 py-3.5 focus:outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20 transition-all placeholder:text-slate-600" placeholder="seu@email.com" />
                     </div>
                   </div>
                 </div>
                 <div className="space-y-2">
                   <label className="block text-sm font-semibold text-slate-300">Mensagem</label>
-                  <textarea required value={contactMessage} onChange={(e) => setContactMessage(e.target.value)} className="w-full bg-slate-950/50 text-slate-200 border border-slate-700/50 rounded-xl px-4 py-4 focus:outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20 transition-all h-40 resize-none placeholder:text-slate-600" placeholder="Escreva sua mensagem aqui..."></textarea>
+                  <textarea required name="message" value={contactMessage} onChange={(e) => setContactMessage(e.target.value)} className="w-full bg-slate-950/50 text-slate-200 border border-slate-700/50 rounded-xl px-4 py-4 focus:outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20 transition-all h-40 resize-none placeholder:text-slate-600" placeholder="Escreva sua mensagem aqui..."></textarea>
+                  <input type="hidden" name="_subject" value={`Novo contato de ${contactName || 'Visitante'} via Portfólio`} />
                 </div>
-                <button disabled={isSending} type="submit" className="w-full group relative inline-flex items-center justify-center gap-3 bg-gradient-to-r from-blue-600 to-teal-500 text-white font-bold py-4 rounded-xl transition-all duration-300 hover:scale-[1.02] hover:shadow-[0_0_30px_rgba(59,130,246,0.4)] overflow-hidden disabled:opacity-70 disabled:hover:scale-100 disabled:cursor-not-allowed">
+                <button type="submit" className="w-full group relative inline-flex items-center justify-center gap-3 bg-gradient-to-r from-blue-600 to-teal-500 text-white font-bold py-4 rounded-xl transition-all duration-300 hover:scale-[1.02] hover:shadow-[0_0_30px_rgba(59,130,246,0.4)] overflow-hidden">
                   <div className="absolute inset-0 bg-white/20 group-hover:translate-x-full -translate-x-full transition-transform duration-500 skew-x-12"></div>
                   <span className="relative z-10 flex items-center gap-2">
-                    {isSending ? <Loader2 className="w-5 h-5 animate-spin" /> : <Mail className="w-5 h-5" />} 
-                    {isSending ? "Enviando..." : "Enviar Mensagem"}
+                    <Mail className="w-5 h-5" /> 
+                    Enviar Mensagem
                   </span>
                 </button>
               </div>
@@ -543,7 +516,6 @@ export default function Home() {
                 <FaLinkedin className="w-6 h-6" />
               </a>
             )}
-
           </div>
         </div>
       </footer>
@@ -586,30 +558,45 @@ export default function Home() {
       {/* Modal de Certificação */}
       {selectedCert && (
         <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 sm:p-6 bg-black/80 backdrop-blur-sm" onClick={() => setSelectedCert(null)}>
-          <div className="bg-slate-950 border border-slate-800 rounded-2xl max-w-4xl w-full max-h-[90vh] flex flex-col overflow-hidden relative shadow-2xl" onClick={(e) => e.stopPropagation()}>
-            <div className="p-5 border-b border-slate-800/80 flex justify-between items-center bg-slate-900/50">
-              <div>
-                <h2 className="text-xl font-bold text-white">{selectedCert.title}</h2>
-                <p className="text-blue-500 text-sm mt-1">{selectedCert.institution} • {selectedCert.hours}h</p>
-              </div>
-              <button onClick={() => setSelectedCert(null)} className="text-slate-400 hover:text-white bg-slate-800/50 hover:bg-slate-700 rounded-full p-2 transition-colors">
-                <X className="w-5 h-5" />
-              </button>
-            </div>
-            <div className="flex-1 overflow-auto bg-black/50 p-4 sm:p-8 flex items-center justify-center">
+          <div className="bg-slate-950 border border-slate-800 rounded-2xl max-w-5xl w-full max-h-[90vh] overflow-hidden flex flex-col md:flex-row relative shadow-2xl shadow-blue-900/20" onClick={(e) => e.stopPropagation()}>
+            <button onClick={() => setSelectedCert(null)} className="absolute top-4 right-4 z-10 text-slate-400 hover:text-white bg-slate-900/80 rounded-full p-2 backdrop-blur-sm transition-colors">
+               <X className="w-5 h-5" />
+            </button>
+            <div className="md:w-3/5 bg-black/50 flex items-center justify-center relative min-h-[30vh] p-4 sm:p-8">
               {selectedCert.image_url ? (
                 <img src={selectedCert.image_url} alt={selectedCert.title} className="max-w-full max-h-full object-contain rounded-lg" />
               ) : (
                 <p className="text-slate-500 flex flex-col items-center gap-4"><Award className="w-16 h-16 opacity-50"/> Imagem do certificado não disponível</p>
               )}
             </div>
-            {selectedCert.pdf_url && (
-               <div className="p-5 border-t border-slate-800/80 bg-slate-900/50 flex justify-center">
-                  <a href={selectedCert.pdf_url} target="_blank" rel="noreferrer" className="flex items-center gap-2 bg-blue-600 text-white px-8 py-3 rounded-xl font-bold hover:bg-blue-500 transition shadow-lg shadow-blue-600/20">
+            <div className="md:w-2/5 p-6 md:p-8 flex flex-col h-full max-h-[60vh] md:max-h-[90vh] overflow-y-auto bg-slate-900/20">
+              <h2 className="text-2xl font-bold text-white mb-2 leading-tight">{selectedCert.title}</h2>
+              <div className="flex items-center justify-between mb-6 gap-4">
+                <p className="text-blue-500 text-sm font-medium">{selectedCert.institution} • {selectedCert.hours}h</p>
+                {selectedCert.date && (
+                  <span className="text-slate-400 text-xs font-medium bg-slate-900/50 px-3 py-1.5 rounded-full border border-slate-800/80 shrink-0">
+                    {new Date(selectedCert.date).toLocaleDateString('pt-BR', { timeZone: 'UTC', month: 'short', year: 'numeric' }).replace('.', '')}
+                  </span>
+                )}
+              </div>
+              
+              {selectedCert.description && (
+                <div className="flex-1 mb-8">
+                  <h4 className="text-slate-400 font-semibold mb-3 text-xs uppercase tracking-wider">Sobre o Certificado</h4>
+                  <p className="text-slate-300 text-sm md:text-base whitespace-pre-line leading-relaxed">
+                    {selectedCert.description}
+                  </p>
+                </div>
+              )}
+
+              {selectedCert.pdf_url && (
+               <div className="pt-6 mt-auto border-t border-slate-800/80">
+                  <a href={selectedCert.pdf_url} target="_blank" rel="noreferrer" className="flex items-center justify-center gap-2 bg-blue-600 text-white w-full py-3 rounded-xl font-bold hover:bg-blue-500 transition shadow-lg shadow-blue-600/20">
                     <FileText className="w-5 h-5" /> Abrir PDF do Certificado
                   </a>
                </div>
             )}
+            </div>
           </div>
         </div>
       )}
